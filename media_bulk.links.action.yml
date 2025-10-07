@@ -1,0 +1,6 @@
+media_bulk.list:
+  title: 'Upload media in bulk'
+  route_name: media_library.bulk.list
+  appears_on:
+    - entity.media.collection
+    - view.media_library.page

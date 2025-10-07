@@ -1,0 +1,9 @@
+{
+  "name": "jacerider/media_bulk",
+  "description": "Allows uploading files in bulk and converting them to media entities using the media library.",
+  "type": "drupal-module",
+  "license": "GPL-2.0-or-later",
+  "require": {
+    "drupal/core": "^10.3 || ^11"
+  }
+}

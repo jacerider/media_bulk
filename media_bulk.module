@@ -1,0 +1,99 @@
+<?php
+
+/**
+ * @file
+ * Hook functions of the  media_bulk module.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
+use Drupal\media_library\MediaLibraryState;
+
+/**
+ * Implements hook_ENTITY_TYPE_load() for view entities.
+ *
+ * Disables the selection functionality of the media library view when used by
+ * the bulk upload.
+ */
+function media_bulk_view_load($entities) {
+  $route_match = \Drupal::routeMatch()->getCurrentRouteMatch();
+
+  $request = \Drupal::request();
+  // ksm($request->query->all());
+  // The route is not enough as when through ajax a Grid or Table is selected or
+  // the filter is applied, then a views route will be used in the ajax request.
+  if ($route_match->getRouteName() === 'media_library.bulk.upload_form' || ($request->get('media_library_opener_id') === 'media_library.opener.bulk_upload')) {
+    foreach ($entities as $id => $entity) {
+      /** @var \Drupal\views\ViewEntityInterface $entity */
+      if ($id === 'media_library') {
+        $default =& $entity->getDisplay('default');
+        $default['display_options']['pager']['type'] = 'none';
+        $default['display_options']['empty'] = [];
+          // ksm($default['display_options']['filters']);
+        foreach ($default['display_options']['sorts'] as $sort_id => $sort) {
+          $default['display_options']['sorts'][$sort_id]['exposed'] = FALSE;
+        }
+        foreach (['widget', 'widget_table'] as $display_id) {
+          $display =& $entity->getDisplay($display_id);
+          // We remove all filters and add an ID filter to only show the
+          // recently uploaded media items.
+          $display['display_options']['filters'] = [];
+          $display['display_options']['filters']['mid'] = [
+            'id' => 'mid',
+            'table' => 'media_field_data',
+            'field' => 'mid',
+            'relationship' => 'none',
+            'group_type' => 'group',
+            'entity_type' => 'media',
+            'entity_field' => 'created',
+            'plugin_id' => 'date',
+            'operator' => 'between',
+            'value' => [
+              'min' => '0',
+              'max' => '0',
+              'value' => '',
+            ],
+            'group' => 1,
+            'exposed' => FALSE,
+            'is_grouped' => FALSE,
+          ];
+          if ($request->query->get('media_library_selection')) {
+            $selected = array_map('intval', explode('+', $request->query->get('media_library_selection')));
+            $display['display_options']['filters']['mid']['value']['min'] = (string) min($selected);
+            $display['display_options']['filters']['mid']['value']['max'] = (string) max($selected);
+          }
+          $display['display_options']['header'] = [];
+          unset($display['display_options']['fields']['media_library_select_form']);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function media_bulk_form_media_library_add_form_upload_alter(&$form, FormStateInterface $form_state, $form_id) {
+  if (isset($form['actions']['save_select'])) {
+    $form['#submit'][] = 'media_bulk_media_library_add_form_upload_submit';
+  }
+}
+
+/**
+ * Custom submit handler for the media library add form upload.
+ */
+function media_bulk_media_library_add_form_upload_submit(&$form, FormStateInterface $form_state) {
+  $storage = $form_state->getStorage();
+  $mids = [];
+  if (!empty($storage['media'])) {
+    foreach ($storage['media'] as $media) {
+      /** @var \Drupal\media\MediaInterface $media */
+      $mids[] = $media->id();
+    }
+    \Drupal::messenger()->addMessage(t('Successfully uploaded @count media items. <a href="@url">View all media</a>.', [
+      '@count' => count($mids),
+      '@url' => Url::fromRoute('entity.media.collection')->toString(),
+    ]));
+  }
+  \Drupal::request()->query->set('media_library_selection', implode('+', $mids));
+}

@@ -1,0 +1,4 @@
+library:
+  css:
+    theme:
+      css/media-bulk.css: {}

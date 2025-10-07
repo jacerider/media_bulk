@@ -1,0 +1,5 @@
+media_bulk.settings:
+  title: 'Media Bulk Settings'
+  parent: system.admin_config_media
+  description: 'Manage media library bulk upload settings.'
+  route_name: media_bulk.settings

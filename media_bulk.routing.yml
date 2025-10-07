@@ -1,0 +1,32 @@
+media_library.bulk.upload_form:
+  path: '/admin/content/media/bulk-upload/{media_type}'
+  defaults:
+    _controller: '\Drupal\media_bulk\Controller\MediaBulkController::uploadForm'
+    _title: 'Multiple media upload'
+  requirements:
+    _custom_access: '\Drupal\media_bulk\Controller\MediaBulkController::accessForm'
+  options:
+    _admin_route: TRUE
+    parameters:
+      media_type:
+        type: entity:media_type
+
+media_library.bulk.list:
+  path: '/admin/content/media/bulk-upload'
+  defaults:
+    _controller: '\Drupal\media_bulk\Controller\MediaBulkController::listUpload'
+    _title: 'Multiple upload'
+  requirements:
+    _custom_access: '\Drupal\media_bulk\Controller\MediaBulkController::accessList'
+  options:
+    _admin_route: TRUE
+
+media_bulk.settings:
+  path: '/admin/config/media/media-bulk'
+  defaults:
+    _form: '\Drupal\media_bulk\Form\MediaBulkSettingsForm'
+    _title: 'Media Bulk Upload Settings'
+  requirements:
+    _permission: 'administer media'
+  options:
+    _admin_route: TRUE
