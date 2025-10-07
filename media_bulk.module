@@ -7,7 +7,6 @@
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
-use Drupal\media_library\MediaLibraryState;
 
 /**
  * Implements hook_ENTITY_TYPE_load() for view entities.
@@ -19,7 +18,6 @@ function media_bulk_view_load($entities) {
   $route_match = \Drupal::routeMatch()->getCurrentRouteMatch();
 
   $request = \Drupal::request();
-  // ksm($request->query->all());
   // The route is not enough as when through ajax a Grid or Table is selected or
   // the filter is applied, then a views route will be used in the ajax request.
   if ($route_match->getRouteName() === 'media_library.bulk.upload_form' || ($request->get('media_library_opener_id') === 'media_library.opener.bulk_upload')) {
@@ -29,7 +27,6 @@ function media_bulk_view_load($entities) {
         $default =& $entity->getDisplay('default');
         $default['display_options']['pager']['type'] = 'none';
         $default['display_options']['empty'] = [];
-          // ksm($default['display_options']['filters']);
         foreach ($default['display_options']['sorts'] as $sort_id => $sort) {
           $default['display_options']['sorts'][$sort_id]['exposed'] = FALSE;
         }
